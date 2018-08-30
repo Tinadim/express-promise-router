@@ -1,7 +1,7 @@
 "use strict";
 const express_1 = require("express");
-const lodash_flattendeep_1 = require("lodash.flattendeep");
-const is_promise_1 = require("is-promise");
+const flattenDeep = require("lodash.flattendeep");
+const isPromise = require("is-promise");
 const httpMethods = require("methods");
 class PromiseRouter {
     constructor(options = {}) {
@@ -35,7 +35,7 @@ class PromiseRouter {
                 first = args[0];
                 args = args.slice(1);
             }
-            args = lodash_flattendeep_1.default(args).map((arg) => this.wrapHandler(arg));
+            args = flattenDeep(args).map((arg) => this.wrapHandler(arg));
             // If we have a route path or something, push it in front
             if (first) {
                 args.unshift(first);
@@ -52,7 +52,7 @@ class PromiseRouter {
         return (...args) => {
             const handlerArgs = args.slice(0, handler.length);
             const ret = handler.apply(null, handlerArgs);
-            if (is_promise_1.default(ret)) {
+            if (isPromise(ret)) {
                 const expandedParams = this.expandHandlerArgs(handlerArgs);
                 Promise.resolve(ret)
                     .then((result) => this.handleResult(result, expandedParams))

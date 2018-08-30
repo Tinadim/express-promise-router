@@ -1,7 +1,7 @@
 {
   "name": "express-promise-router",
   "version": "3.0.3",
-  "main": "dist/express-promise-router.js",
+  "main": "dist/lib/express-promise-router.js",
   "description": "A lightweight wrapper for Express 4's Router that allows middleware to return promises",
   "homepage": "https://github.com/alex-whitney/express-promise-router",
   "bugs": "https://github.com/alex-whitney/express-promise-router/issues",

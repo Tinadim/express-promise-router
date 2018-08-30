@@ -1,6 +1,6 @@
 import { Router, Response, NextFunction } from 'express';
-import flattenDeep from 'lodash.flattendeep';
-import isPromise from 'is-promise';
+import * as flattenDeep from 'lodash.flattendeep';
+import * as isPromise from 'is-promise';
 import * as httpMethods from 'methods';
 import { PromiseRouterOptions, ResponseHandler, ErrorHandler } from './interfaces'
 

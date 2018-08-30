@@ -1,11 +1,10 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const lodash_flattendeep_1 = require("lodash.flattendeep");
 const is_promise_1 = require("is-promise");
-const methods_1 = require("methods");
+const httpMethods = require("methods");
 class PromiseRouter {
-    constructor(options) {
+    constructor(options = {}) {
         this.router = express_1.Router(options);
         this.responseHandler = options.responseHandler;
         this.errorHandler = options.errorHandler;
@@ -13,14 +12,14 @@ class PromiseRouter {
         this.wrapRoute(this.router);
     }
     wrapMethods(router) {
-        const methods = methods_1.default.concat(['use', 'all', 'param']);
+        const methods = httpMethods.concat(['use', 'all', 'param']);
         methods.forEach(method => this.wrapMethod(method, router));
     }
     wrapRoute(router) {
         router.__route = router.route;
         router.route = (path) => {
             const route = router.route(path);
-            const methods = methods_1.default.concat(['all']);
+            const methods = httpMethods.concat(['all']);
             methods.forEach((method) => this.wrapMethod(method, route));
         };
     }
@@ -122,8 +121,7 @@ class PromiseRouter {
         return { next, res };
     }
 }
-function default_1(options) {
+module.exports = (options) => {
     return new PromiseRouter(options).router;
-}
-exports.default = default_1;
+};
 //# sourceMappingURL=express-promise-router.js.map

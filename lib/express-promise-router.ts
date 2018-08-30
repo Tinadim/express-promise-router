@@ -1,7 +1,7 @@
 import { Router, Response, NextFunction } from 'express';
 import flattenDeep from 'lodash.flattendeep';
 import isPromise from 'is-promise';
-import { default as httpMethods } from 'methods';
+import * as httpMethods from 'methods';
 import { PromiseRouterOptions, ResponseHandler, ErrorHandler } from './interfaces'
 
 class PromiseRouter {
@@ -9,7 +9,7 @@ class PromiseRouter {
     responseHandler? : ResponseHandler
     errorHandler? : ErrorHandler
 
-    constructor(options?: PromiseRouterOptions) {
+    constructor(options: PromiseRouterOptions = {}) {
         this.router = Router(options)
         this.responseHandler = options.responseHandler
         this.errorHandler = options.errorHandler
@@ -145,6 +145,6 @@ class PromiseRouter {
 
 }
 
-export default function (options?: PromiseRouterOptions): Router {
+export = (options?: PromiseRouterOptions): Router => {
     return new PromiseRouter(options).router
 }

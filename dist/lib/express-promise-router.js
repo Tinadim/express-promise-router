@@ -18,29 +18,30 @@ class PromiseRouter {
     wrapRoute(router) {
         router.__route = router.route;
         router.route = (path) => {
-            const route = router.route(path);
+            const route = router.__route(path);
             const methods = httpMethods.concat(['all']);
             methods.forEach((method) => this.wrapMethod(method, route));
+            return route;
         };
     }
     wrapMethod(method, instanceToWrap) {
         const original = `__${method}`;
         instanceToWrap[original] = instanceToWrap[method];
-        instanceToWrap[method] = () => {
+        instanceToWrap[method] = (...args) => {
             // Manipulating arguments directly is discouraged
-            let args = this.copyArgs(arguments);
+            let _args = Array.from(args);
             // Grab the first parameter out in case it's a route or array of routes.
             let first = null;
-            if (this.shouldRemoveFirstArg(args)) {
-                first = args[0];
-                args = args.slice(1);
+            if (this.shouldRemoveFirstArg(_args)) {
+                first = _args[0];
+                _args = _args.slice(1);
             }
-            args = flattenDeep(args).map((arg) => this.wrapHandler(arg));
+            _args = flattenDeep(_args).map((arg) => this.wrapHandler(arg));
             // If we have a route path or something, push it in front
             if (first) {
-                args.unshift(first);
+                _args.unshift(first);
             }
-            return instanceToWrap[original].apply(instanceToWrap, args);
+            return instanceToWrap[original].apply(instanceToWrap, _args);
         };
     }
     wrapHandler(handler) {
@@ -82,7 +83,7 @@ class PromiseRouter {
         }
     }
     /** Helper functions **/
-    copyArgs(...args) {
+    copyArgs(args) {
         let copy = new Array(args.length);
         for (let i = 0; i < args.length; ++i) {
             copy[i] = args[i];

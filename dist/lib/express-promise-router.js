@@ -50,18 +50,39 @@ class PromiseRouter {
             const msg = `Expected a callback function but got a ${type}`;
             throw new Error(msg);
         }
-        return (...args) => {
-            const handlerArgs = args.slice(0, handler.length);
-            const ret = handler.apply(null, handlerArgs);
-            if (isPromise(ret)) {
-                const expandedParams = this.expandHandlerArgs(handlerArgs);
-                Promise.resolve(ret)
-                    .then((result) => this.handleResult(result, expandedParams))
-                    .catch((error) => this.handleError(error, expandedParams));
-            }
-        };
+        let wrappedHandler;
+        if (handler.length === 2) {
+            wrappedHandler = (req, res) => {
+                const ret = handler.apply(null, [req, res, () => { }]);
+                this.handlerReturn(ret, { next: null, res });
+            };
+        }
+        else if (handler.length === 3) {
+            wrappedHandler = (req, res, next) => {
+                const ret = handler.apply(null, [req, res, next]);
+                this.handlerReturn(ret, { next, res });
+            };
+        }
+        else {
+            wrappedHandler = (err, req, res, next) => {
+                const ret = handler.apply(null, [err, req, res, next]);
+                if ('string' === typeof next) {
+                    res = req;
+                    next = res;
+                }
+                this.handlerReturn(ret, { next, res });
+            };
+        }
+        return wrappedHandler;
     }
-    handleResult(result, { next, res }) {
+    handlerReturn(ret, { res, next }) {
+        if (isPromise(ret)) {
+            Promise.resolve(ret)
+                .then((result) => this.handlePromiseResult(result, { res, next }))
+                .catch((error) => this.handleError(error, { res, next }));
+        }
+    }
+    handlePromiseResult(result, { next, res }) {
         if (next !== null) {
             if (result === 'next') {
                 next();
@@ -103,23 +124,6 @@ class PromiseRouter {
         return this.isString(args[0]) ||
             this.isRegExp(args[0]) ||
             this.firstArgumentIsArray(args);
-    }
-    expandHandlerArgs(handlerArgs) {
-        // args = [req, res]
-        if (handlerArgs.length < 3) {
-            return { next: null, res: handlerArgs[1] };
-        }
-        // args = [res, res, next] or [err, req, res, next]
-        let next = handlerArgs.slice(-1)[0];
-        let res = handlerArgs.slice(-2)[0];
-        // When calling router.param, the last parameter is a string, not next.
-        // If so, the next should be the one before it. (See https://expressjs.com/en/4x/api.html#router.param)
-        // args = [req, res, next, id]
-        if ('string' === typeof next) {
-            next = handlerArgs.slice(-2)[0];
-            res = handlerArgs.slice(-3)[0];
-        }
-        return { next, res };
     }
 }
 module.exports = (options) => {

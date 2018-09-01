@@ -13,5 +13,11 @@
     "typeRoots": [
       "node_modules/@types"
     ]
-  }
+  },
+  "files": [
+    "lib/express-promise-router"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

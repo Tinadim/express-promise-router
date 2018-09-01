@@ -2,4 +2,4 @@
 import { Router } from 'express';
 import { PromiseRouterOptions } from './interfaces';
 declare const _default: (options?: PromiseRouterOptions) => Router;
-export = _default;
+export default _default;

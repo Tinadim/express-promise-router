@@ -1,4 +1,4 @@
-/// <reference path="../../index.d.ts"/>
+/// <reference path="../../lib/express-promise-router.d.ts"/>
 import * as express from 'express';
 import Router from '../../lib/express-promise-router.js';
 const router = Router();

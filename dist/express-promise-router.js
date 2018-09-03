@@ -103,7 +103,7 @@ class PromiseRouter {
         // denotates error handlers and the second is used for the .param middleware
         else {
             wrappedHandler = (err, req, res, next) => {
-                const ret = handler.apply(...[err, req, res, next]);
+                const ret = handler(...[err, req, res, next]);
                 // If the last parameter is a string (instead of a function) we need to adjust where
                 // to get the values for res and next from
                 if ('string' === typeof next) {

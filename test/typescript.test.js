@@ -1,11 +1,9 @@
-'use strict';
-
-var tt = require('typescript-definition-tester');
-var path = require('path');
-var resolve = require('path').resolve;
-var assert = require('chai').assert;
-var spawnTypeScript = require('./util/launch-utils').spawnTypeScript;
-var GET = require('./util/http-utils').GET;
+const tt = require('typescript-definition-tester');
+const path = require('path');
+const { resolve } = require('path');
+const { assert } = require('chai');
+const { spawnTypeScript } = require('./util/launch-utils');
+const { GET } = require('./util/http-utils');
 
 describe('TypeScript', function() {
     it('should compile base-case successfully against index.d.ts', function(done) {
@@ -15,9 +13,9 @@ describe('TypeScript', function() {
 
     it('should run the example and respond', function(done) {
         this.timeout(5000);
-        var ts_file = resolve(__dirname, './test-resources/typescript-base-case.ts');
-        var target = spawnTypeScript(ts_file);
-        var called = false;
+        const ts_file = resolve(__dirname, './test-resources/typescript-base-case.ts');
+        const target = spawnTypeScript(ts_file);
+        let called = false;
 
         target.stdout.on('data', function(data) {
             if (data.toString().indexOf('START') === -1) {

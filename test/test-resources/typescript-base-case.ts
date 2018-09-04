@@ -1,7 +1,7 @@
-/// <reference path="../../lib/express-promise-router.d.ts"/>
+/// <reference path="../../dist/express-promise-router.d.ts"/>
 import * as express from 'express';
-import Router from '../../lib/express-promise-router.js';
-const router = Router();
+import promiseRouter from '../../dist/express-promise-router.js';
+const router = promiseRouter();
 
 router.get('/', function(req, res) {
     res.send('Hi!');

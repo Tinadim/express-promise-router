@@ -91,25 +91,25 @@ class PromiseRouter {
                 this.handleReturn(ret, res, next, true);
             };
         }
-        // Handler is in the format (req, res, next). Usually denotates regular middlewares and no special
-        // treatment is required here
-        else if (handler.length === 3) {
-            wrappedHandler = (req, res, next) => {
-                const ret = handler(...[req, res, next]);
-                this.handleReturn(ret, res, next);
-            };
-        }
         // Handler is in the format (err, req, res, next) OR (req, res, next, id). The first case
         // denotates error handlers and the second is used for the .param middleware
-        else {
+        else if (handler.length === 4) {
             wrappedHandler = (err, req, res, next) => {
                 const ret = handler(...[err, req, res, next]);
                 // If the last parameter is a string (instead of a function) we need to adjust where
                 // to get the values for res and next from
                 if ('string' === typeof next) {
-                    res = req;
                     next = res;
+                    res = req;
                 }
+                this.handleReturn(ret, res, next);
+            };
+        }
+        // Handler is in the format (req, res, next). Usually denotates regular middlewares and no special
+        // treatment is required here
+        else {
+            wrappedHandler = (req, res, next) => {
+                const ret = handler(...[req, res, next]);
                 this.handleReturn(ret, res, next);
             };
         }
@@ -143,7 +143,7 @@ class PromiseRouter {
         else if (result === 'route') {
             next('route');
         }
-        else if (this.responseHandler !== null && handleResponse) {
+        else if (typeof this.responseHandler === 'function' && handleResponse) {
             this.responseHandler(res, result);
         }
     }
@@ -157,7 +157,10 @@ class PromiseRouter {
      * @param next  - the callback to invoke the next handler in the stack
      */
     handleError(error, res, next) {
-        if (this.errorHandler !== null) {
+        if (!error) {
+            error = new Error('Returned promise was rejected but did not have a reason');
+        }
+        if (typeof this.errorHandler === 'function') {
             this.errorHandler(res, error);
         }
         else {

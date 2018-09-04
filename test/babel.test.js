@@ -1,18 +1,16 @@
-'use strict';
-
-var resolve = require('path').resolve;
-var assert = require('chai').assert;
-var spawnBabel = require('./util/launch-utils').spawnBabel;
-var GET = require('./util/http-utils').GET;
+const { resolve } = require('path');
+const { assert } = require('chai');
+const { spawnBabel } = require('./util/launch-utils');
+const { GET } = require('./util/http-utils');
 
 describe('Babel', function() {
     it('should run the example and respond', function(done) {
         this.timeout(5000);
-        var js_file = resolve(__dirname, './test-resources/babel-base-case.js');
-        var target = spawnBabel(js_file);
-        var called = false;
+        const js_file = resolve(__dirname, './test-resources/babel-base-case.js');
+        const target = spawnBabel(js_file);
+        let called = false;
 
-        target.stdout.on('data', function(data) {
+        target.stdout.on('data', (data) => {
             if (data.toString().indexOf('START') === -1) {
                 return;
             }

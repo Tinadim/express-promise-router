@@ -1,5 +1,5 @@
 import express from 'express';
-import Router from '../../lib/express-promise-router.js';
+import Router from '../../dist/express-promise-router.js';
 const router = Router();
 
 router.get('/', function(req, res) {

@@ -1,3 +1,4 @@
+/// <reference types="express" />
 import { RouterOptions, Response } from 'express';
 export interface PromiseRouterOptions extends RouterOptions {
     responseHandler?: ResponseHandler;

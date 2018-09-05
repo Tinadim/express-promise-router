@@ -1,4 +1,4 @@
-import { Router, Response, NextFunction } from 'express';
+import { IRoute, Router, Response, NextFunction } from 'express';
 import * as flattenDeep from 'lodash.flattendeep';
 import * as isPromise from 'is-promise';
 import * as httpMethods from 'methods';
@@ -54,7 +54,7 @@ class PromiseRouter {
      * @param method - the method of the instance to stub
      * @param instanceToWrap - instance of the Express Router or of the Router.route method
      */
-    private wrapMethod(method: string, instanceToWrap) {
+    private wrapMethod(method: string, instanceToWrap: Router | IRoute) {
         const original = `__${method}`
         instanceToWrap[original] = instanceToWrap[method]
         instanceToWrap[method] = (...args) => {
@@ -184,19 +184,19 @@ class PromiseRouter {
 
     /** Helper functions **/
 
-    private isString(arg: any) {
+    private isString(arg: any): boolean {
         return typeof(arg) === 'string'
     }
 
-    private isRegExp(arg: any) {
+    private isRegExp(arg: any): boolean {
         return arg instanceof RegExp
     }
 
-    private firstArgumentIsArray(args: any) {
+    private firstArgumentIsArray(args: any): boolean {
         return ((Array.isArray(args[0]) && this.isString(args[0][0])) || this.isRegExp(args[0][0]))
     }
 
-    private shouldRemoveFirstArg(args: any) {
+    private shouldRemoveFirstArg(args: any): boolean {
         return this.isString(args[0]) ||
             this.isRegExp(args[0]) ||
             this.firstArgumentIsArray(args)

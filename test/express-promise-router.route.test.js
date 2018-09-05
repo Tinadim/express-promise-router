@@ -303,4 +303,137 @@ describe('new Router().route(...)', function () {
             .then(() => GET('/foo/1'))
             .then((res) => assert.equal(res.body, 'done'));
     });
+
+    describe('Error handler test cases', function () {
+        it('should handle errors in case an error handler is provided', function () {
+            const mockError = new Error('Unexpected error during request');
+            mockError.code = 500;
+
+            const errorHandler = (res, error) => {
+                res.status(error.code).send(error.message);
+            };
+
+            const firstHandler = sinon.stub().callsFake((req, res, next) => {
+                return Promise.reject(mockError);
+            });
+
+            const secondHandler = sinon.stub().callsFake((req, res, next) => res.status(200));
+
+            router = promiseRouter({ errorHandler });
+            router.route('/foo').get(firstHandler, secondHandler);
+            
+            return bootstrap(router)
+                .then(() => GET('/foo'))
+                .then(() => {
+                    throw new Error('Shouldn\'t reach this point');
+                })
+                .catch((response) => {
+                    assert.equal(response.statusCode, mockError.code);
+                    assert.equal(response.message, `${mockError.code} - "${mockError.message}"`);
+                    assert(firstHandler.calledOnce);
+                    assert(secondHandler.notCalled);
+                });
+        });
+    });
+
+    describe('Response handler test cases', function () {
+        it('should handle the promise result in case a response handler is provided', function () {
+            const mockResponse = 'Great success!';
+            const responseHandler = (res, result) => {
+                res.status(200).send(result);
+            };
+
+            const handler = sinon.spy(((req, res) => {
+                return Promise.resolve(mockResponse);
+            }));
+
+            router = promiseRouter({ responseHandler });
+            router.route('/foo').get(handler);
+            
+            return bootstrap(router)
+                .then(() => GET('/foo'))
+                .then((response) => {
+                    assert.equal(response.body, mockResponse);
+                    assert(handler.calledOnce);
+                });
+        });
+    
+        it('should not handle the response in case promise is resolved with \'next\'', function () {
+            const mockResponse = 'Great success!';
+            const responseHandler = sinon.spy((res, result) => {
+                res.status(200).send(result);
+            });
+
+            const firstHandler = sinon.spy(((req, res) => {
+                return Promise.resolve('next');
+            }));
+
+            const secondHandler = sinon.spy((req, res) => {
+                res.status(200).send(mockResponse);
+            })
+
+            router = promiseRouter({ responseHandler });
+            router.route('/foo').get(firstHandler, secondHandler);
+            
+            return bootstrap(router)
+                .then(() => GET('/foo'))
+                .then((response) => {
+                    assert.equal(response.body, mockResponse);
+                    assert(firstHandler.calledOnce);
+                    assert(secondHandler.calledOnce);
+                    assert(responseHandler.notCalled);
+                });
+        });
+    
+        it('should not handle the response in case promise is resolved with \'route\'', function () {
+            const mockResponse = 'Great success!';
+            const responseHandler = sinon.spy((res, result) => {
+                res.status(200).send(result);
+            });
+
+            const firstHandler = sinon.spy(((req, res) => {
+                return Promise.resolve('route');
+            }));
+
+            const secondHandler = sinon.spy((req, res) => {
+                res.status(200).send(mockResponse);
+            })
+
+            router = promiseRouter({ responseHandler });
+            router.route('/foo/:param').get(firstHandler);
+            router.route('/foo/param').get(secondHandler);
+            
+            return bootstrap(router)
+                .then(() => GET('/foo/param'))
+                .then((response) => {
+                    assert.equal(response.body, mockResponse);
+                    assert(firstHandler.calledOnce);
+                    assert(secondHandler.calledOnce);
+                    assert(responseHandler.notCalled);
+                });
+        });
+    
+        it('should not handle the response in case a handler that includes the \'next\' argument is provided', function () {
+            const mockResponse = 'Great success!';
+            const responseHandler = sinon.spy((res, result) => {
+                res.status(200).send(result);
+            });
+
+            const handler = sinon.spy(((req, res, next) => {
+                return Promise.resolve()
+                    .then(() => res.status(200).send(mockResponse));
+            }));
+
+            router = promiseRouter({ responseHandler });
+            router.route('/foo').get(handler);
+            
+            return bootstrap(router)
+                .then(() => GET('/foo'))
+                .then((response) => {
+                    assert.equal(response.body, mockResponse);
+                    assert(handler.calledOnce);
+                    assert(responseHandler.notCalled);
+                });
+        });
+    });
 });
